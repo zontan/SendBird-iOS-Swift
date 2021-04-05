@@ -167,6 +167,69 @@ class Utils: NSObject {
         return alert
     }
     
+    // this has been moved from AppDelegate.channel(_ sender: SBDBaseChannel, didReceive message: SBDBaseMessage)
+    static func showNewMessageAlert(sender: SBDBaseChannel, message: SBDBaseMessage) {
+        var title = ""
+        var body = ""
+        var type = ""
+        var customType = ""
+        if message is SBDUserMessage {
+            let userMessage = message as! SBDUserMessage
+            let sender = userMessage.sender
+            
+            type = "MESG"
+            body = String(format: "%@: %@", (sender?.nickname)!, userMessage.message)
+            customType = userMessage.customType!
+        }
+        else if message is SBDFileMessage {
+            let fileMessage = message as! SBDFileMessage
+            let sender = fileMessage.sender
+            
+            if fileMessage.type.hasPrefix("image") {
+                body = String(format: "%@: (Image)", (sender?.nickname)!)
+            }
+            else if fileMessage.type.hasPrefix("video") {
+                body = String(format: "%@: (Video)", (sender?.nickname)!)
+            }
+            else if fileMessage.type.hasPrefix("audio") {
+                body = String(format: "%@: (Audio)", (sender?.nickname)!)
+            }
+            else {
+                body = String(format: "%@: (File)", sender!.nickname!)
+            }
+        }
+        else if message is SBDAdminMessage {
+            let adminMessage = message as! SBDAdminMessage
+            
+            title = ""
+            body = adminMessage.message
+        }
+        
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = UNNotificationSound.default
+        content.categoryIdentifier = "SENDBIRD_NEW_MESSAGE"
+        content.userInfo = [
+            "sendbird": [
+                "type": type,
+                "custom_type": customType,
+                "channel": [
+                    "channel_url": sender.channelUrl
+                ],
+                "data": "",
+            ],
+        ]
+        let trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: 0.1, repeats: false)
+        let request = UNNotificationRequest(identifier: String(format: "%@_%@", content.categoryIdentifier, sender.channelUrl), content: content, trigger: trigger)
+        let center = UNUserNotificationCenter.current()
+        center.add(request) { (error) in
+            if error != nil {
+                
+            }
+        }
+    }
+    
     static func buildTypingIndicatorLabel(channel: SBDGroupChannel) -> String {
         if let typingMembers = channel.getTypingMembers() {
             if typingMembers.count == 0 {

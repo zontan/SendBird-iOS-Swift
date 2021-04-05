@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var pushReceivedGroupChannel: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        SBDMain.initWithApplicationId("9880C4C1-E6C8-46E8-A8F1-D5890D598C08")
+        SBDMain.initWithApplicationId("2E584D4B-100B-4A8F-A4F7-41F85EB8560F")
         SBDMain.add(self as SBDChannelDelegate, identifier: self.description)
         self.registerForRemoteNotification()
         SBDMain.setAppGroup("group.com.sendbird.sample4");
@@ -230,65 +230,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
         }
         
-        var title = ""
-        var body = ""
-        var type = ""
-        var customType = ""
-        if message is SBDUserMessage {
-            let userMessage = message as! SBDUserMessage
-            let sender = userMessage.sender
-            
-            type = "MESG"
-            body = String(format: "%@: %@", (sender?.nickname)!, userMessage.message)
-            customType = userMessage.customType!
-        }
-        else if message is SBDFileMessage {
-            let fileMessage = message as! SBDFileMessage
-            let sender = fileMessage.sender
-            
-            if fileMessage.type.hasPrefix("image") {
-                body = String(format: "%@: (Image)", (sender?.nickname)!)
-            }
-            else if fileMessage.type.hasPrefix("video") {
-                body = String(format: "%@: (Video)", (sender?.nickname)!)
-            }
-            else if fileMessage.type.hasPrefix("audio") {
-                body = String(format: "%@: (Audio)", (sender?.nickname)!)
-            }
-            else {
-                body = String(format: "%@: (File)", sender!.nickname!)
-            }
-        }
-        else if message is SBDAdminMessage {
-            let adminMessage = message as! SBDAdminMessage
-            
-            title = ""
-            body = adminMessage.message
-        }
-        
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = UNNotificationSound.default
-        content.categoryIdentifier = "SENDBIRD_NEW_MESSAGE"
-        content.userInfo = [
-            "sendbird": [
-                "type": type,
-                "custom_type": customType,
-                "channel": [
-                    "channel_url": sender.channelUrl
-                ],
-                "data": "",
-            ],
-        ]
-        let trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: 0.1, repeats: false)
-        let request = UNNotificationRequest(identifier: String(format: "%@_%@", content.categoryIdentifier, sender.channelUrl), content: content, trigger: trigger)
-        let center = UNUserNotificationCenter.current()
-        center.add(request) { (error) in
-            if error != nil {
-                
-            }
-        }
+        Utils.showNewMessageAlert(sender: sender, message: message)
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {

@@ -216,7 +216,15 @@ class GroupChannelsViewController: UIViewController, UITableViewDelegate, UITabl
         let cell = tableView.dequeueReusableCell(withIdentifier: "GroupChannelTableViewCell") as! GroupChannelTableViewCell
         let channel = self.channels[indexPath.row]
         
-        cell.channelNameLabel.text = Utils.createGroupChannelName(channel: channel)
+        var cellTitle = Utils.createGroupChannelName(channel: channel)
+        
+        //I just want to change what it looks like on this page, so make the change here instead
+        //of in the Util. I don't know what else uses that function.
+        if let type = channel.customType, type != "" {
+            cellTitle.append(" (\(type))")
+        }
+        
+        cell.channelNameLabel.text = cellTitle
         
         let lastMessageDateFormatter = DateFormatter()
         var lastUpdatedAt: Date?
@@ -410,6 +418,7 @@ class GroupChannelsViewController: UIViewController, UITableViewDelegate, UITabl
             self.channelListQuery?.order = .latestLastMessage
             self.channelListQuery?.limit = 20
             self.channelListQuery?.includeEmptyChannel = true
+            self.channelListQuery?.customTypesFilter = ["Zontan"]
         }
         
         if self.channelListQuery?.hasNext == false {
@@ -481,6 +490,8 @@ class GroupChannelsViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             }
         }
+        
+        Utils.showNewMessageAlert(sender: sender, message: message)
     }
     
     func channelDidUpdateTypingStatus(_ sender: SBDGroupChannel) {

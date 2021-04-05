@@ -102,6 +102,7 @@ class CreateGroupChannelViewControllerB: UIViewController, UIImagePickerControll
         params.coverImage = self.coverImageData
         params.add(self.members)
         params.name = channelName
+        params.customType = "Zontan"
         
         
         SBDGroupChannel.createChannel(with: params) { (channel, error) in
